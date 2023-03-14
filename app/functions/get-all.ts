@@ -13,6 +13,10 @@ export const handler: Handler = async (): Promise<any> => {
     const response = await dynamo.scan(params).promise();
     return {
       statusCode: 200,
+      headers: {
+       'Access-Control-Allow-Origin': '*',
+       'Access-Control-Allow-Headers': '*',
+     },
       body: JSON.stringify(response.Items)
     };
   } catch (dbError) {

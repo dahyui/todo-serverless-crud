@@ -27,6 +27,10 @@ export const handler: Handler = async (event): Promise<any> => {
     if (response.Item) {
       return {
         statusCode: 200,
+        headers: {
+         'Access-Control-Allow-Origin': '*',
+         'Access-Control-Allow-Headers': '*',
+       },
         body: JSON.stringify(response.Item)
       };
     } else {

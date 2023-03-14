@@ -9,6 +9,11 @@ const PRIMARY_KEY = process.env.PRIMARY_KEY!;
 const RESERVED_RESPONSE = `Error: You're using AWS reserved keywords as attributes`,
   DYNAMODB_EXECUTION_ERROR = `Error: Execution update, caused a Dynamodb error, please take a look at your CloudWatch Logs.`;
 
+  enum Status {
+    IN_PROGRESS = 1,
+    DONE = 2,
+  }
+
 export const handler: Handler = async (event: APIGatewayEvent): Promise<any> => {
 
   if (!event.body) {
@@ -23,6 +28,7 @@ export const handler: Handler = async (event: APIGatewayEvent): Promise<any> => 
       [PRIMARY_KEY]: uuidv4(),
       createdAt: Date.now(),
       updatedAt: Date.now(),
+      status: Status.IN_PROGRESS,
       ...todo
     }
   };
@@ -32,6 +38,10 @@ export const handler: Handler = async (event: APIGatewayEvent): Promise<any> => 
 
     return {
       statusCode: 201,
+      headers: {
+       'Access-Control-Allow-Origin': '*',
+       'Access-Control-Allow-Headers': '*',
+     },
       body: ''
     };
   } catch (dbError: any) {

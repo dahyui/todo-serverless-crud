@@ -46,7 +46,14 @@ export const handler: Handler = async (event: APIGatewayEvent): Promise<any> => 
 
   try {
     await dynamo.update(params).promise();
-    return { statusCode: 204, body: '' };
+    return {
+      statusCode: 204,
+      headers: {
+       'Access-Control-Allow-Origin': '*',
+       'Access-Control-Allow-Headers': '*',
+     },
+      body: ''
+    };
   } catch (dbError: any) {
     const errorResponse = dbError.code === 'ValidationException' && dbError.message.includes('reserved keyword') ?
       DYNAMODB_EXECUTION_ERROR : RESERVED_RESPONSE;
