@@ -5,7 +5,7 @@ import { AttributeType, BillingMode, Table } from 'aws-cdk-lib/aws-dynamodb';
 import { Runtime } from 'aws-cdk-lib/aws-lambda';
 import { NodejsFunction, NodejsFunctionProps } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { join } from 'path';
-import { IResource, LambdaIntegration, MockIntegration, PassthroughBehavior, RestApi } from 'aws-cdk-lib/aws-apigateway';
+import { LambdaIntegration, Cors, RestApi } from 'aws-cdk-lib/aws-apigateway';
 
 export class AppStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -62,18 +62,23 @@ export class AppStack extends cdk.Stack {
     todoTable.grantWriteData(updateOneLambda);
     todoTable.grantWriteData(deleteOneLambda);
 
-    const api = new RestApi(this, "todo-app");
+    const api = new RestApi(this, "todo-app", {
+      defaultCorsPreflightOptions: {
+        allowOrigins: Cors.ALL_ORIGINS,
+        allowMethods: Cors.ALL_METHODS
+      }
+    });
 
     const todos = api.root.addResource('todos');
     todos.addMethod('GET', new LambdaIntegration(getAllLambda));
     todos.addMethod('POST', new LambdaIntegration(createOneLambda));
-    addCorsOptions(todos);
+    // addCorsOptions(todos);
 
     const singleTodo = todos.addResource('{id}');
     singleTodo.addMethod('GET', new LambdaIntegration(getOneLambda));
     singleTodo.addMethod('PATCH', new LambdaIntegration(updateOneLambda));
     singleTodo.addMethod('DELETE', new LambdaIntegration(deleteOneLambda));
-    addCorsOptions(singleTodo);
+    // addCorsOptions(singleTodo);
 
     new cdk.CfnOutput(this, "HTTP API URL", {
       value: api.url ?? "Something went wrong with the deploy",
@@ -82,30 +87,30 @@ export class AppStack extends cdk.Stack {
   }
 }
 
-export function addCorsOptions(apiResource: IResource) {
-  apiResource.addMethod('OPTIONS', new MockIntegration({
-    integrationResponses: [{
-      statusCode: '200',
-      responseParameters: {
-        'method.response.header.Access-Control-Allow-Headers': "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'",
-        'method.response.header.Access-Control-Allow-Origin': "'*'",
-        'method.response.header.Access-Control-Allow-Credentials': "'false'",
-        'method.response.header.Access-Control-Allow-Methods': "'OPTIONS,GET,PUT,POST,DELETE'",
-      },
-    }],
-    passthroughBehavior: PassthroughBehavior.NEVER,
-    requestTemplates: {
-      "application/json": "{\"statusCode\": 200}"
-    },
-  }), {
-    methodResponses: [{
-      statusCode: '200',
-      responseParameters: {
-        'method.response.header.Access-Control-Allow-Headers': true,
-        'method.response.header.Access-Control-Allow-Methods': true,
-        'method.response.header.Access-Control-Allow-Credentials': true,
-        'method.response.header.Access-Control-Allow-Origin': true,
-      },
-    }]
-  })
-}
+// export function addCorsOptions(apiResource: IResource) {
+//   apiResource.addMethod('OPTIONS', new MockIntegration({
+//     integrationResponses: [{
+//       statusCode: '200',
+//       responseParameters: {
+//         'method.response.header.Access-Control-Allow-Headers': "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'",
+//         'method.response.header.Access-Control-Allow-Origin': "'*'",
+//         'method.response.header.Access-Control-Allow-Credentials': "'false'",
+//         'method.response.header.Access-Control-Allow-Methods': "'OPTIONS,GET,PUT,POST,DELETE'",
+//       },
+//     }],
+//     passthroughBehavior: PassthroughBehavior.NEVER,
+//     requestTemplates: {
+//       "application/json": "{\"statusCode\": 200}"
+//     },
+//   }), {
+//     methodResponses: [{
+//       statusCode: '200',
+//       responseParameters: {
+//         'method.response.header.Access-Control-Allow-Headers': true,
+//         'method.response.header.Access-Control-Allow-Methods': true,
+//         'method.response.header.Access-Control-Allow-Credentials': true,
+//         'method.response.header.Access-Control-Allow-Origin': true,
+//       },
+//     }]
+//   })
+// }
