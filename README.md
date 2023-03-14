@@ -6,7 +6,7 @@ Simple Todo application to run a simple reactjs frontend and backend using AWS C
 $ cd client
 $ yarn install
 $ cp .env.example .env
-// Set the REACT_APP_HTTP_BASE_URL to the API Gateway URL
+# Set the REACT_APP_HTTP_BASE_URL to the API Gateway URL
 ```
 
 ## Backend
